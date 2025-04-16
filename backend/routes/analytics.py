@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import io
 import base64
-from db import init_db # Import init_db directly
+from db import init_db
 
 router = APIRouter()
 
@@ -33,7 +33,7 @@ async def get_analytics():
         async for item in items_collection.find():
             items.append(item)
 
-        # Fix 25: Initialize users as an empty list before fetching
+        # Initialize users as an empty list before fetching
         users = []
         async for user in users_collection.find():
             users.append(user)
@@ -41,12 +41,11 @@ async def get_analytics():
         item_count = len(items)
         user_count = len(users)
 
-        # Fix 26: Use correct dictionary keys "name" and "username"
-        # Use .get() for safer access in case keys are missing
+        # Use correct dictionary keys and safer access
         item_name_lengths = np.array([len(item.get("name", "")) for item in items]) if items else np.array([])
         user_username_lengths = np.array([len(user.get("username", "")) for user in users]) if users else np.array([])
 
-        # Calculate stats safely, handling potential empty arrays (division by zero)
+        # Calculate stats safely
         stats = {
             "item_count": item_count,
             "user_count": user_count,
@@ -56,47 +55,76 @@ async def get_analytics():
             "max_user_username_length": int(np.max(user_username_lengths)) if user_username_lengths.size > 0 else 0,
         }
 
-        # Generate plot using Matplotlib
-        plt.figure(figsize=(10, 6)) # Adjusted figure size slightly
-
-        # Plot histograms only if data exists
+        # Create a figure with 2 subplots in a row (1 row, 2 columns)
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+        fig.suptitle("Analytics Data Visualization", fontsize=16)
+        
+        # First subplot - Item Name Lengths Bargraph
         if item_name_lengths.size > 0:
-            plt.hist(item_name_lengths, bins=range(int(np.min(item_name_lengths)), int(np.max(item_name_lengths)) + 2), alpha=0.7, label="Item Name Lengths", color="skyblue")
-        if user_username_lengths.size > 0:
-            plt.hist(user_username_lengths, bins=range(int(np.min(user_username_lengths)), int(np.max(user_username_lengths)) + 2), alpha=0.7, label="Username Lengths", color="lightgreen")
-
-        # Add labels and title
-        plt.title("Distribution of Name and Username Lengths")
-        plt.xlabel("Length")
-        plt.ylabel("Frequency")
-
-        # Add legend only if there is something to label
-        if item_name_lengths.size > 0 or user_username_lengths.size > 0:
-            plt.legend()
+            unique_lengths, counts = np.unique(item_name_lengths, return_counts=True)
+            ax1.bar(unique_lengths, counts, color='skyblue', alpha=0.7)
+            ax1.set_title("Item Name Length Distribution")
+            ax1.set_xlabel("Length of Item Names")
+            ax1.set_ylabel("Number of Items")
+            ax1.grid(axis='y', linestyle='--', alpha=0.7)
+            
+            # Add data labels on top of each bar
+            for i, (length, count) in enumerate(zip(unique_lengths, counts)):
+                ax1.text(length, count + 0.1, str(count), ha='center')
+                
+            # Set x-ticks to be integers only
+            ax1.set_xticks(unique_lengths)
         else:
-            # Optionally add text if no data
-             plt.text(0.5, 0.5, 'No data available for plotting', horizontalalignment='center', verticalalignment='center', transform=plt.gca().transAxes)
+            ax1.text(0.5, 0.5, 'No item data available', ha='center', va='center', transform=ax1.transAxes)
+            
+        # Second subplot - Username Lengths Pie Chart
+        if user_username_lengths.size > 0:
+            unique_lengths, counts = np.unique(user_username_lengths, return_counts=True)
+            
+            # If there are many unique lengths, group them into ranges for better visualization
+            if len(unique_lengths) > 7:
+                # Create bins for lengths in ranges of 3 (e.g., 1-3, 4-6, etc.)
+                bins = np.arange(min(unique_lengths), max(unique_lengths) + 4, 3)
+                # Create labels for legend
+                bin_labels = [f"{bins[i]}-{bins[i+1]-1}" for i in range(len(bins)-1)]
+                
+                # Count items in each bin
+                binned_data = np.histogram(user_username_lengths, bins=bins)[0]
+                
+                # Plot pie chart with bins
+                ax2.pie(binned_data, labels=bin_labels, autopct='%1.1f%%', 
+                       shadow=True, startangle=90, colors=plt.cm.Paired(np.linspace(0, 1, len(bin_labels))))
+            else:
+                # If few unique lengths, use them directly
+                labels = [f"Length {length}" for length in unique_lengths]
+                ax2.pie(counts, labels=labels, autopct='%1.1f%%', 
+                       shadow=True, startangle=90, colors=plt.cm.Paired(np.linspace(0, 1, len(labels))))
+                
+            ax2.set_title("Username Length Distribution")
+            ax2.axis('equal')  # Equal aspect ratio ensures pie is drawn as a circle
+        else:
+            ax2.text(0.5, 0.5, 'No user data available', ha='center', va='center', transform=ax2.transAxes)
 
-        plt.grid(axis='y', alpha=0.5) # Add grid for better readability
-
+        # Adjust layout for better spacing
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+        
         # Save plot to a bytes buffer
         buffer = io.BytesIO()
-        plt.savefig(buffer, format="png", bbox_inches='tight') # Use bbox_inches='tight'
+        plt.savefig(buffer, format="png", bbox_inches='tight', dpi=100)
         buffer.seek(0)
         # Encode the image bytes to base64 string
         image_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        plt.close() # Close the plot figure to free up memory
+        plt.close()  # Close the plot figure to free up memory
 
-        # Fix 27: Include the plot base64 string in the JSON response
+        # Return both stats and the plot
         return JSONResponse(content={
             "stats": stats,
             "plot": f"data:image/png;base64,{image_base64}"
         })
 
     except HTTPException as http_exc:
-        # Re-raise HTTPExceptions (like 404, 500 from helpers)
+        # Re-raise HTTPExceptions
         raise http_exc
     except Exception as e:
-        # Catch any other unexpected errors during analytics generation
-        # Log the error e here if you have logging setup
+        # Handle other unexpected errors
         raise HTTPException(status_code=500, detail=f"An error occurred while generating analytics: {e}")
