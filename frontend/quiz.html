@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bash Quiz</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="items.html">Items</a>
+    <a href="profile.html">Profile</a>
+    <a href="quiz.html">Quiz</a>
+  </nav>
+  <div class="container">
+    <h1>🧠 Bash Quiz</h1>
+    <p id="scoreDisplay">Score: 0 | High Score: 0</p>
+    <div id="question">Loading question...</div>
+    <form id="answerForm"></form>
+    <p id="feedback"></p>
+    <button id="resetBtn" class="hidden">Reset Quiz</button>
+    <input type="text" id="search" placeholder="Search attempts..." />
+    <p id="attemptCount">Total attempts: 0</p>
+    <div id="attemptList" class="attempt-scrollable"></div>
+  </div>
+  <script src="scripts/quiz.js"></script>
+</body>
+</html>

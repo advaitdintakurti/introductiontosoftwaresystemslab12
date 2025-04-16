@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>News Feed</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="items.html">Items</a>
+    <a href="profile.html">Profile</a>
+    <a href="analytics.html">Analytics</a>
+    <a href="news.html">News</a>
+  </nav>
+  <!-- Did I make this code buggy ??? -->
+  <div class="container">
+    <h1>📰 News Feed</h1>
+    <p id="articleCount">Total articles: 0</p>
+    <input type="text" id="search" placeholder="Search news..." />
+    <select id="source">
+      <option value="all">All Sources</option>
+      <option value="bbc">BBC</option>
+      <option value="guardian">The Guardian</option>
+    </select>
+    <div id="newsList" class="news-scrollable"></div>
+    <div id="loading" style="display: none;">Loading...</div>
+  </div>
+  <script src="scripts/news.js"></script>
+</body>
+</html>
