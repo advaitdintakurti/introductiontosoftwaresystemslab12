@@ -5,7 +5,7 @@ const feeds = [
 ];
 let allArticles = [];
 
-async function loadNews(searchTerm = "", source = "all", reset = false) {
+async function loadNews(searchTerm = "", source = "all", reset = true) {
   const list = document.getElementById("newsList");
   const loading = document.getElementById("loading");
   
@@ -23,6 +23,7 @@ async function loadNews(searchTerm = "", source = "all", reset = false) {
       const res = await fetch(`${rssConverter}${encodeURIComponent(feed.url)}`);
       if (!res.ok) throw new Error(`Failed to fetch ${feed.name}`);
       const data = await res.json();
+      
       
       const articles = (data.items || []).map(item => ({
         title: item.title || "No title",
@@ -44,6 +45,7 @@ async function loadNews(searchTerm = "", source = "all", reset = false) {
     
     document.getElementById("articleCount").textContent = `Total articles: ${filteredArticles.length}`;
     // OPINION: Javascript syntax is stupid
+    // i agree
     list.innerHTML = "";
     filteredArticles.forEach(article => {
       const div = document.createElement("div");
@@ -58,11 +60,23 @@ async function loadNews(searchTerm = "", source = "all", reset = false) {
     });
     
   } catch (err) {
+    console.error("News loading error:", err);
     list.innerHTML += `<p style="color: red;">Error: ${err.message}</p>`;
   } finally {
     loading.style.display = "none";
   }
 }
 
+document.getElementById("search").addEventListener("input", (e) => {
+  const searchTerm = e.target.value;
+  const source = document.getElementById("source").value;
+  loadNews(searchTerm, source, true);
+});
+
+document.getElementById("source").addEventListener("change", (e) => {
+  const source = e.target.value;
+  const searchTerm = document.getElementById("search").value;
+  loadNews(searchTerm, source, true);
+});
 
 loadNews();
