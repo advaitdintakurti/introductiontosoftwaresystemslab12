@@ -18,9 +18,14 @@ async def get_users():
     return users
 
 # whats ur favorite genre of music ??? mine is EDM
+# ew
 @router.post("/")
 async def create_user(user: User):
     collection = await get_users_collection()
+    existing_user = await collection.find_one({"email": user.email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="user already exists")
+    
     result = await collection.insert_one(user.dict())
     return {"id": str(result.inserted_id)}
 
