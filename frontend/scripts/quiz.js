@@ -8,69 +8,7 @@ let attemptHistory = [];
 let seenQuestionIds = [];
 let currentQuestionIndex = -1;
 
-// Local Bash quiz questions
-const QUIZ_QUESTIONS = [
-  {
-    id: 1,
-    text: "Which command is used to list files in a directory?",
-    options: ["ls", "cd", "rm", "pwd"],
-    correct_answer: "ls"
-  },
-  {
-    id: 2,
-    text: "What command would you use to print the current working directory?",
-    options: ["pwd", "cd", "dir", "path"],
-    correct_answer: "pwd"
-  },
-  {
-    id: 3,
-    text: "Which symbol redirects output to a file, overwriting previous content?",
-    options: [">", ">>", "|", "<"],
-    correct_answer: ">"
-  },
-  {
-    id: 4,
-    text: "What command is used to create a new directory?",
-    options: ["mkdir", "touch", "mk", "md"],
-    correct_answer: "mkdir"
-  },
-  {
-    id: 5,
-    text: "Which command is used to find text in files?",
-    options: ["grep", "find", "locate", "search"],
-    correct_answer: "grep"
-  },
-  {
-    id: 6,
-    text: "How do you make a shell script executable?",
-    options: ["chmod +x filename", "chmod +r filename", "exec filename", "run filename"],
-    correct_answer: "chmod +x filename"
-  },
-  {
-    id: 7,
-    text: "What command shows running processes?",
-    options: ["ps", "processes", "top", "proc"],
-    correct_answer: "ps"
-  },
-  {
-    id: 8,
-    text: "What does the command 'cat' do?",
-    options: ["Display file content", "Run a program", "Create directories", "List files"],
-    correct_answer: "Display file content"
-  },
-  {
-    id: 9,
-    text: "Which command is used to remove a file?",
-    options: ["rm", "del", "remove", "erase"],
-    correct_answer: "rm"
-  },
-  {
-    id: 10,
-    text: "How do you display the first 10 lines of a file?",
-    options: ["head -10", "top -10", "first 10", "start -10"],
-    correct_answer: "head -10"
-  }
-];
+// Remove local questions array - we'll use the backend API
 
 // Get DOM elements
 const scoreDisplay = document.getElementById("scoreDisplay");
@@ -106,9 +44,17 @@ searchInput.addEventListener("input", updateAttempts);
 
 async function loadHighScore() {
   try {
-    // Use localStorage instead of API
-    const storedHighScore = localStorage.getItem('bashQuizHighScore');
-    highScore = storedHighScore ? parseInt(storedHighScore) : 0;
+    // Try to get high score from backend first
+    try {
+      const res = await fetch(`${BASE_URL}/quiz/highscore`);
+      const data = await res.json();
+      highScore = data.high_score;
+    } catch (apiError) {
+      // Fallback to localStorage if API is unavailable
+      console.warn("Backend unavailable, using localStorage for high score");
+      const storedHighScore = localStorage.getItem('bashQuizHighScore');
+      highScore = storedHighScore ? parseInt(storedHighScore) : 0;
+    }
     updateScoreDisplay();
   } catch (error) {
     console.error("Error loading high score:", error);
@@ -116,16 +62,44 @@ async function loadHighScore() {
   }
 }
 
+// Add a shuffle function to randomize option order
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 async function loadQuestion() {
   if (gameOver) return;
 
   try {
-    // Get next question from our local question bank
-    currentQuestionIndex = (currentQuestionIndex + 1) % QUIZ_QUESTIONS.length;
-    const data = QUIZ_QUESTIONS[currentQuestionIndex];
+    // Always get questions from the backend API
+    let data;
+    try {
+      const url = currentQuestion 
+        ? `${BASE_URL}/quiz/question?previous_id=${currentQuestion.id}` 
+        : `${BASE_URL}/quiz/question`;
+      
+      const res = await fetch(url);
+      data = await res.json();
+      
+      // Handle key differences between backend and frontend
+      // Backend uses "correct" while frontend expects "correct_answer"
+      if (data.correct && !data.correct_answer) {
+        data.correct_answer = data.correct;
+      }
+    } catch (apiError) {
+      console.error("Backend API unavailable:", apiError);
+      feedback.textContent = "Backend server unavailable. Please try again later.";
+      return;
+    }
     
-    // Check if we've seen all questions
-    if (seenQuestionIds.includes(data.id) && seenQuestionIds.length >= QUIZ_QUESTIONS.length) {
+    // Check if we've seen all questions - use total_questions from backend if available
+    const totalQuestions = data.total_questions || 5;
+    if (seenQuestionIds.includes(data.id) && seenQuestionIds.length >= totalQuestions) {
       feedback.textContent = "You've answered all available questions!";
       gameOver = true;
       form.innerHTML = "";
@@ -134,11 +108,19 @@ async function loadQuestion() {
     }
     
     seenQuestionIds.push(data.id);
-    currentQuestion = data;
+    
+    // Shuffle the options to randomize correct answer position
+    const shuffledOptions = shuffleArray(data.options);
+    
+    // Save both original and shuffled data
+    currentQuestion = {
+      ...data,
+      shuffledOptions: shuffledOptions
+    };
 
     questionDiv.textContent = data.text;
 
-    form.innerHTML = data.options.map(option => `
+    form.innerHTML = shuffledOptions.map(option => `
       <label>
         <input type="radio" name="answer" value="${option}" required>
         ${option}
@@ -164,31 +146,31 @@ form.addEventListener("submit", async (e) => {
   const id = parseInt(form.dataset.id);
 
   try {
-    // Process answer locally
-    const question = QUIZ_QUESTIONS.find(q => q.id === id);
-    const isCorrect = question && question.correct_answer === answer;
-    
-    if (!question) {
-      feedback.textContent = "Question not found";
+    // Send answer to backend API
+    let data;
+    try {
+      const res = await fetch(`${BASE_URL}/quiz/answer`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: id,
+          answer: answer,
+          score: score
+        })
+      });
+      data = await res.json();
+    } catch (apiError) {
+      console.error("Backend API unavailable:", apiError);
+      feedback.textContent = "Backend server unavailable. Please try again later.";
       return;
     }
-    
-    // Update score if correct
-    if (isCorrect) {
-      score += 10;
-      if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('bashQuizHighScore', highScore.toString());
-      }
-    }
 
-    // Prepare response data similar to what the API would return
-    const data = {
-      is_correct: isCorrect,
-      score: score,
-      high_score: highScore,
-      correct_answer: question.correct_answer
-    };
+    if (data.error) {
+      feedback.textContent = data.error;
+      return;
+    }
 
     attemptHistory.push({
       question: currentQuestion.text,
@@ -199,6 +181,10 @@ form.addEventListener("submit", async (e) => {
     updateAttempts();
 
     if (data.is_correct) {
+      score = data.score;
+      highScore = data.high_score;
+      // Also update localStorage as backup
+      localStorage.setItem('bashQuizHighScore', highScore.toString());
       updateScoreDisplay();
       feedback.textContent = "✅ Correct!";
       await loadQuestion();
@@ -216,6 +202,15 @@ form.addEventListener("submit", async (e) => {
 
 resetBtn.addEventListener("click", async () => {
   try {
+    // Try to reset with backend first
+    try {
+      await fetch(`${BASE_URL}/quiz/reset`, {
+        method: "POST"
+      });
+    } catch (apiError) {
+      console.warn("Backend reset endpoint unavailable");
+    }
+    
     score = 0;
     gameOver = false;
     attemptHistory = [];
