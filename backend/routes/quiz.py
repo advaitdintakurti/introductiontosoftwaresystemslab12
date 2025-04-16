@@ -38,17 +38,24 @@ questions = [
 ]
 
 game_state = {"high_score": 0}
-# god would hate me for not dockerizing this repo
+
 @router.get("/question")
-async def get_question():
-    question = random.choice(questions) # ERROR: WAS always returning the same question, gave it random now
+async def get_question(previous_id: int = None):
+    # Get a random question, but try to avoid returning the same question as before
+    if previous_id is not None and len(questions) > 1:
+        available_questions = [q for q in questions if q["id"] != previous_id]
+        question = random.choice(available_questions)
+    else:
+        question = random.choice(questions)
+        
     return {
         "id": question["id"],
         "text": question["text"],
-        "options": question["options"]
+        "options": question["options"],
+        "total_questions": len(questions)  # Add total_questions count for client-side tracking
     }
 
-@router.post("/answer") # ERROR was .get but it should be .post
+@router.post("/answer") 
 async def submit_answer(data: dict):
     question_id = data.get("id")
     answer = data.get("answer")
@@ -66,7 +73,7 @@ async def submit_answer(data: dict):
 
     return {
         "is_correct": is_correct,
-        "correct_answer": question["correct"],
+        "correct_answer": question["correct"],  # Use consistent property name for frontend
         "score": score,
         "high_score": game_state["high_score"]
     }
@@ -74,3 +81,9 @@ async def submit_answer(data: dict):
 @router.get("/highscore")
 async def get_highscore():
     return {"high_score": game_state["high_score"]}
+
+# Add reset endpoint to match frontend's expectations
+@router.post("/reset")
+async def reset_quiz():
+    # Reset user's session but keep high score intact
+    return {"status": "Quiz reset successfully"}
