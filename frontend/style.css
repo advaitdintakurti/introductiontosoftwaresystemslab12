@@ -1,2 +1,277 @@
-Aah I was too lazy to implement this
-You can do it
+/* Basic Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f4f4f4;
+  padding: 70px 20px 20px; /* Added padding-top to account for fixed navbar */
+}
+
+/* Navigation Styles */
+nav {
+  background-color: #1e6bc8; /* Changed from #333 to blue */
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 0; /* Removed border radius */
+  text-align: center; /* Center align the navigation */
+  display: flex;
+  justify-content: center; /* Center the links horizontally */
+  
+  /* New properties for full-width fixed positioning */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+nav a {
+  color: white; /* Already white, kept for clarity */
+  text-decoration: none;
+  padding: 10px 15px;
+  margin-right: 5px;
+  border-radius: 3px;
+  transition: background-color 0.3s;
+}
+
+nav a:hover {
+  background-color: #2a78d8; /* Changed hover color to lighter blue */
+}
+
+/* Container Styles */
+.container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin-bottom: 20px;
+  color: #222;
+}
+
+p {
+  margin-bottom: 15px;
+}
+
+/* Header Styling */
+header {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  color: white;
+  padding: 1rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* Navigation Tabs */
+.nav-tabs {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav-tabs a {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  position: relative;
+}
+
+.nav-tabs a:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.nav-tabs a.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-tabs a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #ffffff;
+  border-radius: 3px;
+}
+
+/* Main Content */
+main {
+  width: 90%;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Card Elements */
+.card {
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #eaeaea;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Buttons */
+.btn {
+  padding: 0.5rem 1.5rem;
+  background-color: #1e3c72;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #2a5298;
+}
+
+/* Quiz Styles */
+#answerForm button,
+#resetBtn {
+  background-color: #1e6bc8;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin-top: 15px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+#answerForm button:hover,
+#resetBtn:hover {
+  background-color: #2a78d8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#answerForm button:active,
+#resetBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+#resetBtn {
+  background-color: #d9534f;
+}
+
+#resetBtn:hover {
+  background-color: #c9302c;
+}
+
+.hidden {
+  display: none;
+}
+
+#answerForm label {
+  display: block;
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  border: 1px solid #e9ecef;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#answerForm label:hover {
+  background-color: #e9ecef;
+}
+
+#answerForm input[type="radio"] {
+  margin-right: 10px;
+}
+
+#answerForm input[type="radio"]:checked + label {
+  background-color: #d4edff;
+  border-color: #1e6bc8;
+}
+
+#search {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.attempt-scrollable {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 15px;
+  border: 1px solid #e9ecef;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .nav-tabs {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .nav-tabs a {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* For this CSS to work, your HTML should include:
+   1. A <header> element
+   2. Elements with classes: header-container, logo, nav-tabs
+   3. <a> tags within .nav-tabs
+   4. <main> element for content
+   5. .card elements for card styling
+   6. .btn class on buttons
+*/
