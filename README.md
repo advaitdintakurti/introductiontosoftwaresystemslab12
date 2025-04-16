@@ -38,7 +38,7 @@ repo: https://github.com/advaitdintakurti/introductiontosoftwaresystemslab12
 8. added container to items.html
 9. prevent duplicate users
 10. edit css
-11. fix ALL of the <nav>s
+11. fix ALL of the navs
 
 ## Aman Jayesh - 2024101005
 1. Initialize API router in items.py - Aman Jayesh
