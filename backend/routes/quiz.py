@@ -37,22 +37,32 @@ questions = [
     }
 ]
 
-game_state = {"high_score": 0}
+# Add session state to track asked questions
+game_state = {
+    "high_score": 0,
+    "asked_questions": set()  # Track questions asked in current session
+}
 
 @router.get("/question")
 async def get_question(previous_id: int = None):
-    # Get a random question, but try to avoid returning the same question as before
-    if previous_id is not None and len(questions) > 1:
-        available_questions = [q for q in questions if q["id"] != previous_id]
-        question = random.choice(available_questions)
-    else:
-        question = random.choice(questions)
-        
+    # If all questions have been asked, reset the tracking
+    if len(game_state["asked_questions"]) >= len(questions):
+        game_state["asked_questions"].clear()
+    
+    # Get available questions that haven't been asked yet
+    available_questions = [q for q in questions if q["id"] not in game_state["asked_questions"]]
+    
+    # Select a random question from available ones
+    question = random.choice(available_questions)
+    
+    # Add the question ID to asked questions
+    game_state["asked_questions"].add(question["id"])
+    
     return {
         "id": question["id"],
         "text": question["text"],
         "options": question["options"],
-        "total_questions": len(questions)  # Add total_questions count for client-side tracking
+        "total_questions": len(questions)
     }
 
 @router.post("/answer") 
@@ -82,8 +92,8 @@ async def submit_answer(data: dict):
 async def get_highscore():
     return {"high_score": game_state["high_score"]}
 
-# Add reset endpoint to match frontend's expectations
+# Modify the reset endpoint to clear asked questions
 @router.post("/reset")
 async def reset_quiz():
-    # Reset user's session but keep high score intact
+    game_state["asked_questions"].clear()  # Clear asked questions on reset
     return {"status": "Quiz reset successfully"}
