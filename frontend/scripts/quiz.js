@@ -187,13 +187,15 @@ form.addEventListener("submit", async (e) => {
       localStorage.setItem('bashQuizHighScore', highScore.toString());
       updateScoreDisplay();
       feedback.textContent = "✅ Correct!";
-      await loadQuestion();
     } else {
-      feedback.textContent = `❌ Incorrect. Correct answer: ${data.correct_answer}. Game Over.`;
-      gameOver = true;
-      form.innerHTML = "";
-      resetBtn.classList.remove("hidden");
+      feedback.textContent = `❌ Incorrect. Correct answer: ${data.correct_answer}.`;
     }
+    
+    // Wait a moment before loading the next question
+    setTimeout(() => {
+      loadQuestion();
+    }, 1500); // 1.5 second delay to show feedback
+    
   } catch (error) {
     console.error("Error processing answer:", error);
     feedback.textContent = "Error processing answer.";
