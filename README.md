@@ -1,5 +1,7 @@
 ### Fixing the Buggy Code
 
+repo: https://github.com/advaitdintakurti/introductiontosoftwaresystemslab12
+
 - This code has 30 issues out of which 1 is no code in style.css . 
 - The total marks for the entire codebase is 40, some issues have more marks than the other one. Style.css is of 5 marks. It will get scaled down to 20. All team members will get equal marks.
 - You are suppose to work in teams of 4 or 5
@@ -29,11 +31,14 @@
 ## Advait Dintakurti - 2024111010
 1. remove unused file home.js 0ca41b8
 2. missing <nav> in analytics.html  93ba16d
-3. in profile.html 529dc14 ->
-4. wrong include path
-5. id mismatch with profile.js
-6. song reccomendations
+4. wrong include path in profile.html
+5. id mismatch with profile.js in profile.html
+6. added song reccomendations in profile.html
 7. fixed news
+8. added container to items.html
+9. prevent duplicate users
+10. edit css
+11. fix ALL of the <nav>s
 
 ## Aman Jayesh - 2024101005
 1. Initialize API router in items.py - Aman Jayesh
