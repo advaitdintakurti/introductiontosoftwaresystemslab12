@@ -15,17 +15,19 @@
     <a href="quiz.html">Quiz</a>
   </nav>
 
-  <input type="text" id="search" placeholder="Search items..." />
+  <div class="container">
+    <input type="text" id="search" placeholder="Search items..." />
 
-  <p id="itemCount">Total items: 0</p>
-
-  <form id="itemForm">
-    <input type="text" id="name" placeholder="Item name" required />
-    <input type="text" id="description" placeholder="Item description" required />
-    <button type="submit">Add Item</button>
-  </form>
-
-  <ul id="itemList"></ul>
+    <p id="itemCount">Total items: 0</p>
+  
+    <form id="itemForm">
+      <input type="text" id="name" placeholder="Item name" required />
+      <input type="text" id="description" placeholder="Item description" required />
+      <button type="submit">Add Item</button>
+    </form>
+  
+    <ul id="itemList"></ul>
+  </div>
 
   <script src="scripts/items.js"></script>
 </body>
