@@ -22,6 +22,7 @@ app = FastAPI(
 origins = [
     "http://localhost", # Add the origin of your frontend if served by a local server
     "http://localhost:8080", # Example if frontend runs on 8080
+    "http://127.0.0.1:5500",  # Allow your frontend's origin
     "null", # Allow 'null' origin for local file:// access
     # Add any other origins if needed, e.g., your deployed frontend URL
 ]

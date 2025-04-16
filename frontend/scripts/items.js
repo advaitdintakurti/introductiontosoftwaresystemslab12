@@ -3,6 +3,7 @@ const baseURL = "http://localhost:8000";
 async function loadItems(searchTerm = "") {
   const res = await fetch(`${baseURL}/items`);
   const data = await res.json();
+  console.log("Items loaded:", data); // for debugging
   const list = document.getElementById("itemList");
   list.innerHTML = "";
 
@@ -24,8 +25,15 @@ async function loadItems(searchTerm = "") {
 }
 
 async function deleteItem(id) {
-  await fetch(`${baseURL}/items/${id}`, { method: "POST" });
-  loadItems(document.getElementById("search").value); 
+  try {
+    const res = await fetch(`${baseURL}/items/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      throw new Error(`Failed to delete item: ${res.statusText}`);
+    }
+    loadItems(document.getElementById("search").value); // Reload the items list
+  } catch (error) {
+    console.error("Error deleting item:", error);
+  }
 }
 
 document.getElementById("search").addEventListener("input", (e) => {
@@ -34,11 +42,12 @@ document.getElementById("search").addEventListener("input", (e) => {
 // Chocolate Question : Does React do Server-Side Rendering or Client-Side Rendering?
 document.getElementById("itemForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+  console.log("Form submitted"); // for debugging
   const name = document.getElementById("name").value;
   const description = document.getElementById("description").value;
   await fetch(`${baseURL}/items`, {
     method: "POST",
-    headers: { "Content-Type": "application/html" },
+    headers: { "Content-Type": "application/json" }, //need to send data as json
     body: JSON.stringify({ name, description })
   });
   e.target.reset();
